@@ -67,8 +67,12 @@ defmodule OSC.Message do
     do_construct_arguments tail, remaining_args, [value | result]
   end
 
-  defp get_next_value(?i, <<value :: [signed, big, size(32)], rest ::binary>>) do
+  defp get_next_value(?i, <<value :: [signed, big, size(32)], rest :: binary>>) do
     {{:osc_integer, value}, rest}
+  end
+
+  defp get_next_value(?f, <<value :: [float, size(32)], rest :: binary>>) do
+    {{:osc_float, value}, rest}
   end
 
 end
