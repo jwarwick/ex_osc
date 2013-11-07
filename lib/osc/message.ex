@@ -1,6 +1,6 @@
 defmodule OSC.Message do
   @moduledoc """
-  Parse and contruct OSC Messages.
+  Parse and construct OSC Messages.
   Message specification here: 
   http://archive.cnmat.berkeley.edu/OpenSoundControl/OSC-spec.html
   """
