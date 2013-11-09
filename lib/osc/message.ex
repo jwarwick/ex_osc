@@ -39,8 +39,8 @@ defmodule OSC.Message do
       |> :binary.bin_to_list 
   end
 
-  defp remove_extra_nulls(type_tag, arguments) do
-    extra_null_count = extra_nulls type_tag
+  defp remove_extra_nulls(string, arguments) do
+    extra_null_count = extra_nulls string
     len = size(arguments) - extra_null_count
     :binary.part arguments, extra_null_count, len
   end
@@ -73,6 +73,12 @@ defmodule OSC.Message do
 
   defp get_next_value(?f, <<value :: [float, size(32)], rest :: binary>>) do
     {{:osc_float, value}, rest}
+  end
+
+  defp get_next_value(?s, arguments) do
+    [string, rest] = String.split arguments, <<0>>, global: false
+    rest = remove_extra_nulls string, rest
+    {{:osc_string, string}, rest}
   end
 
 end

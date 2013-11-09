@@ -43,5 +43,19 @@ defmodule OSC.MessageTest do
     assert_in_delta 440.0, float_value, 0.001
   end
 
+  test "parses a string message" do
+    msg = <<"/ab", 0, ",s", 0, 0, "john", 0, 0, 0, 0>>
+    assert {"/ab", [{:osc_string, "john"}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",s", 0, 0, "hello", 0, 0, 0>>
+    assert {"/ab", [{:osc_string, "hello"}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",s", 0, 0, "ab", 0, 0>>
+    assert {"/ab", [{:osc_string, "ab"}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",s", 0, 0, "bob", 0>>
+    assert {"/ab", [{:osc_string, "bob"}]} = OSC.Message.parse(msg)
+  end
+
 end
 
