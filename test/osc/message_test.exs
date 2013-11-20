@@ -82,6 +82,12 @@ defmodule OSC.MessageTest do
 
     msg = <<"/ab", 0, ",I", 0, 0>>
     assert {"/ab", [{:osc_impulse}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",iT", 0, 1000 :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_integer, 1000}, {:osc_true}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",FiT", 0, 0, 0, 0, 1000 :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_false}, {:osc_integer, 1000}, {:osc_true}]} = OSC.Message.parse(msg)
   end
 end
 

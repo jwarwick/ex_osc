@@ -41,8 +41,12 @@ defmodule OSC.Message do
 
   defp remove_extra_nulls(string, arguments) do
     extra_null_count = extra_nulls string
-    len = size(arguments) - extra_null_count
-    :binary.part arguments, extra_null_count, len
+    remove_leading_nulls(arguments, extra_null_count)
+  end
+
+  defp remove_leading_nulls(arguments, null_count) do
+    len = size(arguments) - null_count
+    :binary.part arguments, null_count, len
   end
 
   defp extra_nulls(type_tag) do
@@ -57,6 +61,12 @@ defmodule OSC.Message do
   defp string_size(str) do
     str_size = 1 + size(str)
     4 * (div(str_size, 4) + 1)
+  end
+
+  # osc blobs must be multiples of 4 bytes (padded with trailing \0)
+  defp blob_size(len) when len <= 4, do: 4
+  defp blob_size(len) do
+    4 * (div(len, 4) + 1)
   end
 
   defp construct_arguments(args, list), do: do_construct_arguments(args, list, [])
@@ -82,17 +92,10 @@ defmodule OSC.Message do
   end
 
   defp get_next_value(?b, <<len :: [signed, big, size(32)], value :: [binary, size(len)], rest :: binary>>) do
-    # rest = remove_extra_nulls value, rest
+    padded_len = blob_size(len)
+    rest = remove_leading_nulls rest, padded_len - len
     {{:osc_blob, value}, rest}
   end
-
-  # # osc blobs must be multiples of 4 bytes (padded with trailing \0)
-  # defp blob_size(str) when size(str) < 4, do: 4
-  # defp blob_size(str) do
-  #   str_size = size(str)
-  #   4 * (div(str_size, 4) + 1)
-  # end
-
 
   defp get_next_value(?T, arguments) do
     {{:osc_true}, arguments}
