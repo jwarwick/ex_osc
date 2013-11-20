@@ -57,5 +57,31 @@ defmodule OSC.MessageTest do
     assert {"/ab", [{:osc_string, "bob"}]} = OSC.Message.parse(msg)
   end
 
+  test "parses a blob message" do
+    msg = <<"/ab", 0, ",b", 0, 0, 0x04 :: [signed, big, size(32)], 0xbc :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_blob, <<0xbc :: [signed, big, size(32)]>>}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",b", 0, 0, 0x05 :: [signed, big, size(32)], 0xbc :: [signed, big, size(40)], 0, 0, 0>>
+    assert {"/ab", [{:osc_blob, <<0xbc :: [signed, big, size(40)]>>}]} = OSC.Message.parse(msg)
+  end
+
+  test "parses a blob and an int" do
+    msg = <<"/ab", 0, ",bi", 0, 0x05 :: [signed, big, size(32)], 0xbc :: [signed, big, size(40)], 0, 0, 0, 1000 :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_blob, <<0xbc :: [signed, big, size(40)]>>}, {:osc_integer, 1000}]} = OSC.Message.parse(msg)
+  end
+
+  test "parses true/false/null/impulse" do
+    msg = <<"/ab", 0, ",T", 0, 0>>
+    assert {"/ab", [{:osc_true}]} = OSC.Message.parse(msg)
+    
+    msg = <<"/ab", 0, ",F", 0, 0>>
+    assert {"/ab", [{:osc_false}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",N", 0, 0>>
+    assert {"/ab", [{:osc_null}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",I", 0, 0>>
+    assert {"/ab", [{:osc_impulse}]} = OSC.Message.parse(msg)
+  end
 end
 

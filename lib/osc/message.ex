@@ -81,5 +81,33 @@ defmodule OSC.Message do
     {{:osc_string, string}, rest}
   end
 
+  defp get_next_value(?b, <<len :: [signed, big, size(32)], value :: [binary, size(len)], rest :: binary>>) do
+    # rest = remove_extra_nulls value, rest
+    {{:osc_blob, value}, rest}
+  end
+
+  # # osc blobs must be multiples of 4 bytes (padded with trailing \0)
+  # defp blob_size(str) when size(str) < 4, do: 4
+  # defp blob_size(str) do
+  #   str_size = size(str)
+  #   4 * (div(str_size, 4) + 1)
+  # end
+
+
+  defp get_next_value(?T, arguments) do
+    {{:osc_true}, arguments}
+  end
+
+  defp get_next_value(?F, arguments) do
+    {{:osc_false}, arguments}
+  end
+
+  defp get_next_value(?N, arguments) do
+    {{:osc_null}, arguments}
+  end
+
+  defp get_next_value(?I, arguments) do
+    {{:osc_impulse}, arguments}
+  end
 end
 
