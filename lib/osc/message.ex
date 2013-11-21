@@ -149,5 +149,21 @@ defmodule OSC.Message do
   defp construct_args({:osc_null}, {tags, args}) do
     {tags <> <<?N>>, args}
   end
+
+  defp construct_args({:osc_integer, value}, {tags, args}) do
+    {tags <> <<?i>>, args <> <<value :: [signed, big, size(32)]>>}
+  end
+
+  defp construct_args({:osc_float, value}, {tags, args}) do
+    {tags <> <<?f>>, args <> <<value :: [float, size(32)]>>}
+  end
+
+  defp construct_args({:osc_string, value}, {tags, args}) do
+    {tags <> <<?s>>, args <> pad_string(value)}
+  end
+
+  defp construct_args({:osc_blob, value}, {tags, args}) do
+    {tags <> <<?b>>, args <> <<size(value) :: [signed, big, size(32)]>> <> add_nulls(value)}
+  end
 end
 

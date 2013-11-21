@@ -102,5 +102,40 @@ defmodule OSC.MessageTest do
     assert <<"/ab", 0, ",N", 0, 0>> = OSC.Message.construct("/ab", {:osc_null})
     assert <<"/ab", 0, ",IF", 0>> = OSC.Message.construct("/ab", [{:osc_impulse}, {:osc_false}])
   end
+
+  test "construct a message with args" do
+    assert <<"/ab", 0, ",i", 0, 0, 1000 :: [signed, big, size(32)]>> = 
+              OSC.Message.construct("/ab", {:osc_integer, 1000})
+
+    assert <<"/ab", 0, ",f", 0, 0, 0x43, 0xdc, 0, 0>> = 
+              OSC.Message.construct("/ab", [{:osc_float, 440.0}])
+  end
+
+  test "construct a string message" do
+    assert <<"/ab", 0, ",s", 0, 0, "john", 0, 0, 0, 0>> =
+              OSC.Message.construct("/ab", [{:osc_string, "john"}])
+
+    assert <<"/ab", 0, ",s", 0, 0, "hello", 0, 0, 0>> =
+              OSC.Message.construct("/ab", [{:osc_string, "hello"}])
+
+    assert <<"/ab", 0, ",s", 0, 0, "ab", 0, 0>> = 
+              OSC.Message.construct("/ab", [{:osc_string, "ab"}])
+
+    assert <<"/ab", 0, ",s", 0, 0, "bob", 0>> = 
+              OSC.Message.construct("/ab", [{:osc_string, "bob"}])
+  end
+
+  test "construct a blob message" do
+    assert <<"/ab", 0, ",b", 0, 0, 0x04 :: [signed, big, size(32)], 0xbc :: [signed, big, size(32)]>> =
+              OSC.Message.construct("/ab", [{:osc_blob, <<0xbc :: [signed, big, size(32)]>>}])
+
+    assert <<"/ab", 0, ",b", 0, 0, 0x05 :: [signed, big, size(32)], 0xbc :: [signed, big, size(40)], 0, 0, 0>> = 
+              OSC.Message.construct("/ab", [{:osc_blob, <<0xbc :: [signed, big, size(40)]>>}])
+  end
+
+  test "construct a blob and an int message" do
+    assert <<"/ab", 0, ",bi", 0, 0x05 :: [signed, big, size(32)], 0xbc :: [signed, big, size(40)], 0, 0, 0, 1000 :: [signed, big, size(32)]>> =
+           OSC.Message.construct("/ab", [{:osc_blob, <<0xbc :: [signed, big, size(40)]>>}, {:osc_integer, 1000}])
+  end
 end
 
