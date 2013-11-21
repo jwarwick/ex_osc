@@ -98,6 +98,14 @@ defmodule OSC.MessageTest do
     assert {"/ab", [{:osc_rgba, [red: 0x01, green: 0x02, blue: 0x03, alpha: 0x04]}, {:osc_integer, 1000}]} = OSC.Message.parse(msg)
   end
 
+  test "parses a midi message" do
+    msg = <<"/ab", 0, ",m", 0, 0, 0x01020304::size(32)>>
+    assert {"/ab", [{:osc_midi, [port_id: 0x01, status: 0x02, data1: 0x03, data2: 0x04]}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",mi", 0, 0x01020304::size(32), 1000 :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_midi, [port_id: 0x01, status: 0x02, data1: 0x03, data2: 0x04]}, {:osc_integer, 1000}]} = OSC.Message.parse(msg)
+  end
+
   test "construct a simple message" do
     assert <<"/ab", 0, ",", 0, 0, 0>> = OSC.Message.construct("/ab", [])
 
@@ -155,6 +163,11 @@ defmodule OSC.MessageTest do
 
     assert <<"/ab", 0, ",r", 0, 0, 0x00000000::size(32)>> = 
     OSC.Message.construct("/ab", [{:osc_rgba, []}])
+  end
+
+  test "construct a midi message" do
+    assert <<"/ab", 0, ",m", 0, 0, 0x01020304::size(32)>> = 
+    OSC.Message.construct("/ab", [{:osc_midi, [port_id: 0x01, status: 0x02, data1: 0x03, data2: 0x04]}])
   end
 end
 

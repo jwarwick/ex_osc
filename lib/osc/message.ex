@@ -117,6 +117,10 @@ defmodule OSC.Message do
     {{:osc_rgba, [red: r, green: g, blue: b, alpha: a]}, rest}
   end
 
+  defp get_next_value(?m, <<port, status, data1, data2, rest::binary>>) do
+    {{:osc_midi, [port_id: port, status: status, data1: data1, data2: data2]}, rest}
+  end
+
   @doc """
   Construct an OSC message
   """
@@ -174,6 +178,10 @@ defmodule OSC.Message do
     {tags <> <<?r>>, args <> 
       <<value_or_zero(colors[:red]), value_or_zero(colors[:green]), 
       value_or_zero(colors[:blue]), value_or_zero(colors[:alpha])>>}
+  end
+
+  defp construct_args({:osc_midi, values}, {tags, args}) do
+    {tags <> <<?m>>, args <> <<values[:port_id], values[:status], values[:data1], values[:data2]>>}
   end
 
   defp value_or_zero(nil), do: 0
