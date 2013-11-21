@@ -90,6 +90,14 @@ defmodule OSC.MessageTest do
     assert {"/ab", [{:osc_false}, {:osc_integer, 1000}, {:osc_true}]} = OSC.Message.parse(msg)
   end
 
+  test "parses a color" do
+    msg = <<"/ab", 0, ",r", 0, 0, 0x01020304::size(32)>>
+    assert {"/ab", [{:osc_rgba, [red: 0x01, green: 0x02, blue: 0x03, alpha: 0x04]}]} = OSC.Message.parse(msg)
+
+    msg = <<"/ab", 0, ",ri", 0, 0x01020304::size(32), 1000 :: [signed, big, size(32)]>>
+    assert {"/ab", [{:osc_rgba, [red: 0x01, green: 0x02, blue: 0x03, alpha: 0x04]}, {:osc_integer, 1000}]} = OSC.Message.parse(msg)
+  end
+
   test "construct a simple message" do
     assert <<"/ab", 0, ",", 0, 0, 0>> = OSC.Message.construct("/ab", [])
 
@@ -136,6 +144,17 @@ defmodule OSC.MessageTest do
   test "construct a blob and an int message" do
     assert <<"/ab", 0, ",bi", 0, 0x05 :: [signed, big, size(32)], 0xbc :: [signed, big, size(40)], 0, 0, 0, 1000 :: [signed, big, size(32)]>> =
            OSC.Message.construct("/ab", [{:osc_blob, <<0xbc :: [signed, big, size(40)]>>}, {:osc_integer, 1000}])
+  end
+
+  test "construct an rgba message" do
+    assert <<"/ab", 0, ",r", 0, 0, 0x01020304::size(32)>> = 
+    OSC.Message.construct("/ab", [{:osc_rgba, [red: 0x01, green: 0x02, blue: 0x03, alpha: 0x04]}])
+
+    assert <<"/ab", 0, ",r", 0, 0, 0x01000304::size(32)>> = 
+    OSC.Message.construct("/ab", [{:osc_rgba, [red: 0x01, blue: 0x03, alpha: 0x04]}])
+
+    assert <<"/ab", 0, ",r", 0, 0, 0x00000000::size(32)>> = 
+    OSC.Message.construct("/ab", [{:osc_rgba, []}])
   end
 end
 

@@ -113,6 +113,10 @@ defmodule OSC.Message do
     {{:osc_impulse}, arguments}
   end
 
+  defp get_next_value(?r, <<r, g, b, a, rest :: binary>>) do
+    {{:osc_rgba, [red: r, green: g, blue: b, alpha: a]}, rest}
+  end
+
   @doc """
   Construct an OSC message
   """
@@ -165,5 +169,14 @@ defmodule OSC.Message do
   defp construct_args({:osc_blob, value}, {tags, args}) do
     {tags <> <<?b>>, args <> <<size(value) :: [signed, big, size(32)]>> <> add_nulls(value)}
   end
+
+  defp construct_args({:osc_rgba, colors}, {tags, args}) do
+    {tags <> <<?r>>, args <> 
+      <<value_or_zero(colors[:red]), value_or_zero(colors[:green]), 
+      value_or_zero(colors[:blue]), value_or_zero(colors[:alpha])>>}
+  end
+
+  defp value_or_zero(nil), do: 0
+  defp value_or_zero(value), do: value
 end
 
