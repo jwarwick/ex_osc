@@ -112,5 +112,42 @@ defmodule OSC.Message do
   defp get_next_value(?I, arguments) do
     {{:osc_impulse}, arguments}
   end
+
+  @doc """
+  Construct an OSC message
+  """
+  def construct(path, args) when is_list(args) do
+    padded_path = pad_string path
+    {type_tags, arguments} = Enum.reduce args, {<<?,>>, <<>>}, &(construct_args/2)
+    padded_tags = pad_string type_tags
+    padded_path <> padded_tags <> arguments
+  end
+  def construct(path, args) when is_tuple(args) do
+    construct(path, [args])
+  end
+
+  defp pad_string(str) do
+    str = str <> <<0>>
+    add_nulls str
+  end
+
+  defp add_nulls(x) when 0 == rem(size(x), 4), do: x
+  defp add_nulls(x), do: add_nulls(x <> <<0>>)
+
+  defp construct_args({:osc_impulse}, {tags, args}) do
+    {tags <> <<?I>>, args}
+  end
+
+  defp construct_args({:osc_true}, {tags, args}) do
+    {tags <> <<?T>>, args}
+  end
+
+  defp construct_args({:osc_false}, {tags, args}) do
+    {tags <> <<?F>>, args}
+  end
+
+  defp construct_args({:osc_null}, {tags, args}) do
+    {tags <> <<?N>>, args}
+  end
 end
 
