@@ -13,9 +13,9 @@ defmodule ElixirOsc.Listener do
     :gen_udp.open(port, [:binary, {:active, true}])
   end
   
-  def handle_info(msg, port) do
-    IO.inspect msg
-    {:noreply, port}
+  def handle_info(_msg = {:udp, _port, _ip, _send_port, data}, socket) do
+    :osc_parser <- {:osc_msg, data}
+    {:noreply, socket}
   end
 end
 
