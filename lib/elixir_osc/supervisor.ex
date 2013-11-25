@@ -9,6 +9,7 @@ defmodule ElixirOsc.Supervisor do
     children = [
       # Define workers and child supervisors to be supervised
       # worker(ElixirOsc.Worker, [])
+      worker(ElixirOsc.Listener, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
