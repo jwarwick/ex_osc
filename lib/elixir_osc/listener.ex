@@ -6,7 +6,7 @@ defmodule ElixirOsc.Listener do
   def start_link, do: start_link([])
   def start_link(options) do
     port = Keyword.get(options, :port, @default_udp_port)
-    :gen_server.start_link({:local, :osc_listener}, __MODULE__, [port: port], [])
+    :gen_server.start_link(__MODULE__, [port: port], [])
   end
 
   def init([port: port]) do
