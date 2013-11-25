@@ -8,8 +8,7 @@ defmodule ElixirOsc.Parser do
 
   def handle_info({:osc_msg, data}, state) do
     result = OSC.Message.parse data
-    IO.inspect result
-
+    ElixirOsc.Events.send_event(result)
     {:noreply, state}
   end
 
