@@ -6,8 +6,4 @@ defmodule ElixirOsc do
   def start(_type, args) do
     ElixirOsc.Supervisor.start_link args
   end
-
-  def start_logger do
-    ElixirOsc.Events.subscribe(ElixirOsc.Logger, [])
-  end
 end
