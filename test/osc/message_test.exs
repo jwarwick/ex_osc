@@ -106,6 +106,11 @@ defmodule OSC.MessageTest do
     assert {"/ab", [{:osc_midi, [port_id: 0x01, status: 0x02, data1: 0x03, data2: 0x04]}, {:osc_integer, 1000}]} = OSC.Message.parse(msg)
   end
 
+  test "parses a timetag" do
+    msg = <<"/ab", 0, ",t", 0, 0, 0xc50204ecec42ee92::size(64)>>
+    assert {"/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 04}}}]} = OSC.Message.parse(msg)
+  end
+
   test "construct a simple message" do
     assert <<"/ab", 0, ",", 0, 0, 0>> = OSC.Message.construct("/ab", [])
 
@@ -168,6 +173,11 @@ defmodule OSC.MessageTest do
   test "construct a midi message" do
     assert <<"/ab", 0, ",m", 0, 0, 0x01020304::size(32)>> = 
     OSC.Message.construct("/ab", [{:osc_midi, [port_id: 0x01, status: 0x02, data1: 0x03, data2: 0x04]}])
+  end
+
+  test "construct a timetag" do
+    assert <<"/ab", 0, ",t", 0, 0, 0xc50204ecec42ee92::size(64)>> =
+      OSC.Message.construct("/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 04}}}])
   end
 end
 

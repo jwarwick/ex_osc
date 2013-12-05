@@ -5,6 +5,8 @@ defmodule OSC.Message do
   http://archive.cnmat.berkeley.edu/OpenSoundControl/OSC-spec.html
   """
 
+  use Bitwise
+
   @doc """
   Parse an OSC message into components
   """
@@ -121,6 +123,20 @@ defmodule OSC.Message do
     {{:osc_midi, [port_id: port, status: status, data1: data1, data2: data2]}, rest}
   end
 
+  defp get_next_value(?t, <<secs::32, usecs::32, rest::binary>>) do
+    {{:osc_timetag, :calendar.now_to_universal_time(sntp_time_to_now(secs, usecs))}, rest}
+  end
+
+  defp sntp_time_to_now(sec, usec) do
+    t = case sec &&& 0x80000000 do
+      0 -> sec + 2085978496 # use base: 7-Feb-2036 @ 06:28:16 UTC
+      _ -> sec - 2208988800  # use base: 1-Jan-1900 @ 01:00:00 UTC
+    end
+
+    {div(t, 1000000), rem(t, 1000000), round((usec * 1000000) / (bsl(1,32)))} 
+  end
+
+
   @doc """
   Construct an OSC message
   """
@@ -184,7 +200,20 @@ defmodule OSC.Message do
     {tags <> <<?m>>, args <> <<values[:port_id], values[:status], values[:data1], values[:data2]>>}
   end
 
+  defp construct_args({:osc_timetag, datetime}, {tags, args}) do
+    {tags <> <<?t>>, args <> "blah"}
+  end
+
   defp value_or_zero(nil), do: 0
   defp value_or_zero(value), do: value
+
+  defp now_to_sntp_time({_,_,usec} = now) do
+    secsSinceJan1900 = bor(0x80000000,
+
+    (:calendar.datetime_to_gregorian_seconds(:calendar.now_to_universal_time(now)) 
+    - 59958230400))
+
+    {secsSinceJan1900, round(usec * bsl(1, 32) / 1000000)}
+  end
 end
 
