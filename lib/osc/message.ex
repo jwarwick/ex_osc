@@ -201,7 +201,8 @@ defmodule OSC.Message do
   end
 
   defp construct_args({:osc_timetag, datetime}, {tags, args}) do
-    {tags <> <<?t>>, args <> "blah"}
+    {secs, usecs} = datetime |> datetime_to_now |> now_to_sntp_time
+    {tags <> <<?t>>, args <> <<secs::32, usecs::32>>}
   end
 
   defp value_or_zero(nil), do: 0
@@ -209,11 +210,15 @@ defmodule OSC.Message do
 
   defp now_to_sntp_time({_,_,usec} = now) do
     secsSinceJan1900 = bor(0x80000000,
-
-    (:calendar.datetime_to_gregorian_seconds(:calendar.now_to_universal_time(now)) 
-    - 59958230400))
+      (:calendar.datetime_to_gregorian_seconds(:calendar.now_to_universal_time(now)) - 59958230400))
 
     {secsSinceJan1900, round(usec * bsl(1, 32) / 1000000)}
+  end
+
+  defp datetime_to_now(datetime) do
+    seconds = :calendar.datetime_to_gregorian_seconds(datetime) - 62167219200
+    ## 62167219200 == calendar:datetime_to_gregorian_seconds({{1970, 1, 1}, {0, 0, 0}})
+    {div(seconds, 1000000), rem(seconds, 1000000), 0}
   end
 end
 

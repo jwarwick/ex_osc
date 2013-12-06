@@ -108,7 +108,7 @@ defmodule OSC.MessageTest do
 
   test "parses a timetag" do
     msg = <<"/ab", 0, ",t", 0, 0, 0xc50204ecec42ee92::size(64)>>
-    assert {"/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 04}}}]} = OSC.Message.parse(msg)
+    assert {"/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 4}}}]} = OSC.Message.parse(msg)
   end
 
   test "construct a simple message" do
@@ -176,8 +176,8 @@ defmodule OSC.MessageTest do
   end
 
   test "construct a timetag" do
-    assert <<"/ab", 0, ",t", 0, 0, 0xc50204ecec42ee92::size(64)>> =
-      OSC.Message.construct("/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 04}}}])
+    assert <<"/ab", 0, ",t", 0, 0, 0xc50204ec00000000::size(64)>> =
+      OSC.Message.construct("/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 4}}}])
   end
 end
 
