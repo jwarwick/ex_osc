@@ -12,6 +12,7 @@ defmodule ElixirOsc.Supervisor do
       # worker(ElixirOsc.Worker, [])
       worker(ElixirOsc.Listener, args),
       worker(ElixirOsc.Parser, args),
+      worker(ElixirOsc.Sender, args),
     ]
 
     ElixirOsc.Events.start_link
