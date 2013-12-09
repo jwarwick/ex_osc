@@ -185,5 +185,15 @@ defmodule OSC.MessageTest do
     assert <<"/ab", 0, ",t", 0, 0, 0xc50204ec00000000::size(64)>> =
       OSC.Message.construct("/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 4}}}])
   end
+
+  test "construct a bundle" do
+    assert <<"#bundle", 0, 214, 80, 122, 226, 0, 0, 0, 0, 24::[size(32), signed], "/greeting", 0, 0, 0, ",is", 0, 0, 0, 0, 72, "bob", 0>> =
+    OSC.Message.construct(:osc_bundle, {:osc_timetag, {{2013, 12, 9}, {17, 22, 42}}},
+        [{"/greeting", [osc_integer: 72, osc_string: "bob"]}]) 
+
+    assert <<"#bundle", 0, 214, 80, 122, 226, 0, 0, 0, 0, 20::[size(32), signed], "/greeting", 0, 0, 0, ",s", 0, 0, "bob", 0>> =
+    OSC.Message.construct(:osc_bundle, {:osc_timetag, {{2013, 12, 9}, {17, 22, 42}}},
+        [{"/greeting", osc_string: "bob"}]) 
+  end
 end
 

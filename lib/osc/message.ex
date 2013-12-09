@@ -164,6 +164,19 @@ defmodule OSC.Message do
   def construct(path, args) when is_tuple(args) do
     construct(path, [args])
   end
+  def construct(:osc_bundle, {:osc_timetag, datetime}, data) do
+    bins = do_construct_bundle(data, [])
+    {secs, usecs} = datetime |> datetime_to_now |> now_to_sntp_time
+    acc = <<"#bundle", 0, secs::32, usecs::32>>
+    Enum.reduce(bins, acc, fn(v,acc) -> acc <> v end)
+  end
+
+  defp do_construct_bundle([], acc), do: Enum.reverse acc
+  defp do_construct_bundle([{path, args} | rest], acc) do
+    result = construct(path, args)
+    result_size = size(result)
+    do_construct_bundle(rest, [<<result_size::[size(32), signed]>> <> result | acc])
+  end
 
   defp pad_string(str) do
     str = str <> <<0>>
