@@ -111,6 +111,12 @@ defmodule OSC.MessageTest do
     assert {"/ab", [{:osc_timetag, {{2004, 9, 27}, {3, 18, 4}}}]} = OSC.Message.parse(msg)
   end
 
+  test "parses a bundle" do
+    msg = <<"#bundle", 0, 214, 80, 122, 226, 215, 103, 64, 0, 24::[size(32), signed], "/greeting", 0, 0, 0, ",is", 0, 0, 0, 0, 72, "bob", 0>>
+    assert {:osc_bundle, {:osc_timetag, {{2013, 12, 9}, {17, 22, 42}}},
+        [{"/greeting", [osc_integer: 72, osc_string: "bob"]}]} = OSC.Message.parse(msg)
+  end
+
   test "construct a simple message" do
     assert <<"/ab", 0, ",", 0, 0, 0>> = OSC.Message.construct("/ab", [])
 

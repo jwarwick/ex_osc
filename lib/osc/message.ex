@@ -10,7 +10,18 @@ defmodule OSC.Message do
   @doc """
   Parse an OSC message into components
   """
-  def parse(msg) do
+  def parse(<<"#bundle", 0, secs::32, usecs::32, rest::binary>>) do
+    {:osc_bundle, {:osc_timetag, translate_sntp_time(secs, usecs)}, 
+      parse_bundle_element(rest, [])}
+  end
+  def parse(msg), do: parse_element(msg)
+
+  defp parse_bundle_element(<<>>, acc), do: Enum.reverse acc
+  defp parse_bundle_element(<<elt_size :: [size(32), signed], data :: [size(elt_size), unit(8), binary], rest::binary>>, acc) do
+    parse_bundle_element(rest, [parse_element(data) | acc])
+  end
+
+  defp parse_element(msg) do
     {address_pattern, type_tag_list, arguments} = split_parts msg
     args = construct_arguments(type_tag_list, arguments)
     {address_pattern, args}
@@ -124,7 +135,11 @@ defmodule OSC.Message do
   end
 
   defp get_next_value(?t, <<secs::32, usecs::32, rest::binary>>) do
-    {{:osc_timetag, :calendar.now_to_universal_time(sntp_time_to_now(secs, usecs))}, rest}
+    {{:osc_timetag, translate_sntp_time(secs, usecs)}, rest}
+  end
+
+  defp translate_sntp_time(secs, usecs) do
+    :calendar.now_to_universal_time(sntp_time_to_now(secs, usecs))
   end
 
   defp sntp_time_to_now(sec, usec) do
