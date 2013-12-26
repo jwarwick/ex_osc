@@ -4,7 +4,7 @@ defmodule ElixirOsc.Mixfile do
   def project do
     [ app: :elixir_osc,
       version: "0.0.1",
-      elixir: "~> 0.11.1-dev",
+      elixir: "~> 0.12-dev",
       deps: deps ]
   end
 
