@@ -1,4 +1,4 @@
-defmodule ElixirOsc.Parser do
+defmodule ExOsc.Parser do
   use GenServer.Behaviour
 
   def start_link, do: start_link([])
@@ -8,7 +8,7 @@ defmodule ElixirOsc.Parser do
 
   def handle_info({:osc_msg, data}, state) do
     result = OSC.Message.parse data
-    ElixirOsc.Events.send_event(result)
+    ExOsc.Events.send_event(result)
     {:noreply, state}
   end
 

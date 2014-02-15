@@ -1,4 +1,4 @@
-defmodule ElixirOsc.Listener do
+defmodule ExOsc.Listener do
   use GenServer.Behaviour
 
   @default_udp_port 8000

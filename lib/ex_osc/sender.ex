@@ -1,4 +1,4 @@
-defmodule ElixirOsc.Sender do
+defmodule ExOsc.Sender do
   use GenServer.Behaviour
 
   def send_message(ip_tuple, port, {path, args}) do

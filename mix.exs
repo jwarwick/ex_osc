@@ -1,8 +1,8 @@
-defmodule ElixirOsc.Mixfile do
+defmodule ExOsc.Mixfile do
   use Mix.Project
 
   def project do
-    [ app: :elixir_osc,
+    [ app: :ex_osc,
       version: "0.0.1",
       elixir: ">= 0.12.4",
       deps: deps ]
@@ -10,7 +10,7 @@ defmodule ElixirOsc.Mixfile do
 
   # Configuration for the OTP application
   def application do
-    [mod: { ElixirOsc, [] }]
+    [mod: { ExOsc, [] }]
   end
 
   # Returns the list of dependencies in the format:

@@ -1,4 +1,4 @@
-defmodule ElixirOsc.Events do
+defmodule ExOsc.Events do
 
   def start_link(), do: start_link([])
   def start_link(_args) do

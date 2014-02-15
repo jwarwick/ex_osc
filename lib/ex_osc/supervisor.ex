@@ -1,4 +1,4 @@
-defmodule ElixirOsc.Supervisor do
+defmodule ExOsc.Supervisor do
   use Supervisor.Behaviour
 
   def start_link, do: start_link([])
@@ -9,13 +9,13 @@ defmodule ElixirOsc.Supervisor do
   def init(args) do
     children = [
       # Define workers and child supervisors to be supervised
-      # worker(ElixirOsc.Worker, [])
-      worker(ElixirOsc.Listener, args),
-      worker(ElixirOsc.Parser, args),
-      worker(ElixirOsc.Sender, args),
+      # worker(ExOsc.Worker, [])
+      worker(ExOsc.Listener, args),
+      worker(ExOsc.Parser, args),
+      worker(ExOsc.Sender, args),
     ]
 
-  {:ok, _arg} = ElixirOsc.Events.start_link
+    {:ok, _pid} = ExOsc.Events.start_link
 
     # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
     # for other strategies and supported options
