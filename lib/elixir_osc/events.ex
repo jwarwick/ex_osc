@@ -2,7 +2,7 @@ defmodule ElixirOsc.Events do
 
   def start_link(), do: start_link([])
   def start_link(_args) do
-    :gen_event.start_link({:local, :osc_events})
+    {:ok, _pid} = :gen_event.start_link({:local, :osc_events})
     {:ok, []}
   end
 

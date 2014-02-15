@@ -15,7 +15,7 @@ defmodule ElixirOsc.Supervisor do
       worker(ElixirOsc.Sender, args),
     ]
 
-    ElixirOsc.Events.start_link
+  {:ok, _arg} = ElixirOsc.Events.start_link
 
     # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
     # for other strategies and supported options
