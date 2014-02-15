@@ -14,7 +14,7 @@ defmodule ElixirOsc.Listener do
   end
   
   def handle_info(_msg = {:udp, _socket, _send_ip, _send_port, data}, socket) do
-    :osc_parser <- {:osc_msg, data}
+    send(:osc_parser, {:osc_msg, data})
     {:noreply, socket}
   end
 end
