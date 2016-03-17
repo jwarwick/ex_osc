@@ -1,18 +1,23 @@
 defmodule ExOsc.Logger do
+  @moduledoc """
+  Simple Logger process that listens for incoming events and inspects them.
+  """
+
   use GenEvent
+  require Logger
 
   def start_logger do
-    pid = {ExOsc.Logger, make_ref}
-    :ok = ExOsc.Events.subscribe(pid)
+    pid = {__MODULE__, make_ref}
+    :ok = GenEvent.add_handler(:osc_events, pid, [])
     {:ok, pid}
   end
 
   def stop_logger(pid) do
-    ExOsc.Events.unsubscribe(pid) 
+    :ok = GenEvent.remove_handler(:osc_events, pid, [])
   end
 
   def handle_event(event, state) do
-    IO.inspect event
+    Logger.info "OSC: #{inspect event}"
     {:ok, state}
   end
 end

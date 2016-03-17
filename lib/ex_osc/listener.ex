@@ -19,7 +19,11 @@ defmodule ExOsc.Listener do
   def handle_info(_msg = {:udp, _socket, _send_ip, _send_port, data}, socket) do
     data
     |> OSC.Message.parse
-    |> ExOsc.Events.send_event
+    |> notify_event_handler
     {:noreply, socket}
+  end
+
+  defp notify_event_handler(msg) do
+    GenEvent.notify(:osc_events, {:osc_event, msg})
   end
 end
