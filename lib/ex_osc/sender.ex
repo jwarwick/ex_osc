@@ -1,17 +1,21 @@
 defmodule ExOsc.Sender do
+  @moduledoc """
+  GenServer process to handle sending OSC messages
+  """
   use GenServer
 
   def send_message(ip_tuple, port, {path, args}) do
     data = OSC.Message.construct(path, args)
-    GenServer.cast(:osc_sender, {:osc_message, ip_tuple, port, data})
+    GenServer.cast(__MODULE__, {:osc_message, ip_tuple, port, data})
   end
 
-  def start_link(_args) do
-    GenServer.start_link __MODULE__, :ok, name: :osc_sender
+  def start_link() do
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
-  def init(:ok) do
-    :gen_udp.open(0, [:binary, {:active, true}])
+  def init(_args) do
+    {:ok, socket} = :gen_udp.open(0, [:binary, {:active, true}])
+    {:ok, socket}
   end
 
   def handle_cast({:osc_message, ip, port, data}, socket) do

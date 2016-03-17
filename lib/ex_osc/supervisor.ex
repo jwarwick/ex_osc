@@ -11,8 +11,7 @@ defmodule ExOsc.Supervisor do
       # Define workers and child supervisors to be supervised
       # worker(ExOsc.Worker, [])
       worker(ExOsc.Listener, args),
-      worker(ExOsc.Parser, args),
-      worker(ExOsc.Sender, args),
+      worker(ExOsc.Sender, args)
     ]
 
     {:ok, _pid} = ExOsc.Events.start_link
