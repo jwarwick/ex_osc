@@ -1,8 +1,7 @@
 defmodule ExOsc.Supervisor do
   use Supervisor
 
-  def start_link, do: start_link([])
-  def start_link(args) do
+  def start_link(args \\ []) do
     Supervisor.start_link __MODULE__, args
   end
 

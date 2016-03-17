@@ -6,8 +6,7 @@ defmodule ExOsc.Listener do
 
   @default_udp_port 8000
 
-  def start_link, do: start_link([])
-  def start_link(options) do
+  def start_link(options \\ []) do
     port = Keyword.get(options, :port, @default_udp_port)
     GenServer.start_link(__MODULE__, port: port)
   end
