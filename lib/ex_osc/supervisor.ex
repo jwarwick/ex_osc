@@ -1,9 +1,9 @@
 defmodule ExOsc.Supervisor do
-  use Supervisor.Behaviour
+  use Supervisor
 
   def start_link, do: start_link([])
   def start_link(args) do
-    :supervisor.start_link(__MODULE__, args)
+    Supervisor.start_link __MODULE__, args
   end
 
   def init(args) do
@@ -17,8 +17,6 @@ defmodule ExOsc.Supervisor do
 
     {:ok, _pid} = ExOsc.Events.start_link
 
-    # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
-    # for other strategies and supported options
     supervise(children, strategy: :one_for_one)
   end
 end

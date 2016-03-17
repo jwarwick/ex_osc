@@ -1,5 +1,5 @@
 defmodule ExOsc.Logger do
-  use GenEvent.Behaviour
+  use GenEvent
 
   def start_logger do
     pid = {ExOsc.Logger, make_ref}

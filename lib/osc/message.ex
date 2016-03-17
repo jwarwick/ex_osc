@@ -1,23 +1,24 @@
 defmodule OSC.Message do
   @moduledoc """
   Parse and construct OSC Messages.
-  Message specification here: 
+  Message specification here:
   http://archive.cnmat.berkeley.edu/OpenSoundControl/OSC-spec.html
   """
-
   use Bitwise
 
   @doc """
   Parse an OSC message into components
   """
   def parse(<<"#bundle", 0, secs::32, usecs::32, rest::binary>>) do
-    {:osc_bundle, {:osc_timetag, translate_sntp_time(secs, usecs)}, 
+    {:osc_bundle, {:osc_timetag, translate_sntp_time(secs, usecs)},
       parse_bundle_element(rest, [])}
   end
+
   def parse(msg), do: parse_element(msg)
 
   defp parse_bundle_element(<<>>, acc), do: Enum.reverse acc
-  defp parse_bundle_element(<<elt_size :: [size(32), signed], data :: [size(elt_size), unit(8), binary], rest::binary>>, acc) do
+
+  defp parse_bundle_element(<<elt_size :: size(32)-signed, data :: size(elt_size)-unit(8)-binary, rest::binary>>, acc) do
     parse_bundle_element(rest, [parse_element(data) | acc])
   end
 
@@ -34,22 +35,22 @@ defmodule OSC.Message do
   end
 
   defp split_address(msg) do
-    [address_pattern, rest] = String.split msg, <<0>>, global: false
+    [address_pattern, rest] = String.split msg, <<0>>, parts: 2
     rest = String.lstrip rest, 0
     {address_pattern, rest}
   end
 
   defp split_type_tag( {address_pattern, rest} ) do
-    [type_tag, arguments] = String.split rest, <<0>>, global: false
+    [type_tag, arguments] = String.split rest, <<0>>, parts: 2
     arguments = remove_extra_nulls type_tag, arguments
     type_tag = normalize_type_tag type_tag
     {address_pattern, type_tag, arguments}
   end
 
   defp normalize_type_tag(type_tag) do
-    type_tag  
+    type_tag
       |> String.lstrip(?,)
-      |> :binary.bin_to_list 
+      |> :binary.bin_to_list
   end
 
   defp remove_extra_nulls(string, arguments) do
@@ -58,21 +59,21 @@ defmodule OSC.Message do
   end
 
   defp remove_leading_nulls(arguments, null_count) do
-    len = size(arguments) - null_count
-    :binary.part arguments, null_count, len
+    len = byte_size(arguments) - null_count
+    binary_part arguments, null_count, len
   end
 
   defp extra_nulls(type_tag) do
     osc_len = string_size type_tag
-    type_len = 1 + size type_tag
+    type_len = 1 + byte_size type_tag
     osc_len - type_len
   end
 
   # osc strings must be multiples of 4 bytes (padded with trailing \0)
   # and must end with at \0
-  defp string_size(str) when size(str) < 4, do: 4
+  defp string_size(str) when byte_size(str) < 4, do: 4
   defp string_size(str) do
-    str_size = 1 + size(str)
+    str_size = 1 + byte_size(str)
     4 * (div(str_size, 4) + 1)
   end
 
@@ -90,21 +91,21 @@ defmodule OSC.Message do
     do_construct_arguments tail, remaining_args, [value | result]
   end
 
-  defp get_next_value(?i, <<value :: [signed, big, size(32)], rest :: binary>>) do
+  defp get_next_value(?i, <<value :: signed-big-size(32), rest :: binary>>) do
     {{:osc_integer, value}, rest}
   end
 
-  defp get_next_value(?f, <<value :: [float, size(32)], rest :: binary>>) do
+  defp get_next_value(?f, <<value :: float-size(32), rest :: binary>>) do
     {{:osc_float, value}, rest}
   end
 
   defp get_next_value(?s, arguments) do
-    [string, rest] = String.split arguments, <<0>>, global: false
+    [string, rest] = String.split arguments, <<0>>, parts: 2
     rest = remove_extra_nulls string, rest
     {{:osc_string, string}, rest}
   end
 
-  defp get_next_value(?b, <<len :: [signed, big, size(32)], value :: [binary, size(len)], rest :: binary>>) do
+  defp get_next_value(?b, <<len :: signed-big-size(32), value :: binary-size(len), rest :: binary>>) do
     padded_len = blob_size(len)
     rest = remove_leading_nulls rest, padded_len - len
     {{:osc_blob, value}, rest}
@@ -148,7 +149,7 @@ defmodule OSC.Message do
       _ -> sec - 2208988800  # use base: 1-Jan-1900 @ 01:00:00 UTC
     end
 
-    {div(t, 1000000), rem(t, 1000000), round((usec * 1000000) / (bsl(1,32)))} 
+    {div(t, 1000000), rem(t, 1000000), round((usec * 1000000) / (bsl(1,32)))}
   end
 
 
@@ -174,8 +175,8 @@ defmodule OSC.Message do
   defp do_construct_bundle([], acc), do: Enum.reverse acc
   defp do_construct_bundle([{path, args} | rest], acc) do
     result = construct(path, args)
-    result_size = size(result)
-    do_construct_bundle(rest, [<<result_size::[size(32), signed]>> <> result | acc])
+    result_size = byte_size(result)
+    do_construct_bundle(rest, [<<result_size :: size(32)-signed>> <> result | acc])
   end
 
   defp pad_string(str) do
@@ -183,7 +184,7 @@ defmodule OSC.Message do
     add_nulls str
   end
 
-  defp add_nulls(x) when 0 == rem(size(x), 4), do: x
+  defp add_nulls(x) when 0 == rem(byte_size(x), 4), do: x
   defp add_nulls(x), do: add_nulls(x <> <<0>>)
 
   defp construct_args({:osc_impulse}, {tags, args}) do
@@ -203,11 +204,11 @@ defmodule OSC.Message do
   end
 
   defp construct_args({:osc_integer, value}, {tags, args}) do
-    {tags <> <<?i>>, args <> <<value :: [signed, big, size(32)]>>}
+    {tags <> <<?i>>, args <> <<value :: signed-big-size(32)>>}
   end
 
   defp construct_args({:osc_float, value}, {tags, args}) do
-    {tags <> <<?f>>, args <> <<value :: [float, size(32)]>>}
+    {tags <> <<?f>>, args <> <<value :: float-size(32)>>}
   end
 
   defp construct_args({:osc_string, value}, {tags, args}) do
@@ -215,12 +216,12 @@ defmodule OSC.Message do
   end
 
   defp construct_args({:osc_blob, value}, {tags, args}) do
-    {tags <> <<?b>>, args <> <<size(value) :: [signed, big, size(32)]>> <> add_nulls(value)}
+    {tags <> <<?b>>, args <> <<byte_size(value) :: signed-big-size(32)>> <> add_nulls(value)}
   end
 
   defp construct_args({:osc_rgba, colors}, {tags, args}) do
-    {tags <> <<?r>>, args <> 
-      <<value_or_zero(colors[:red]), value_or_zero(colors[:green]), 
+    {tags <> <<?r>>, args <>
+      <<value_or_zero(colors[:red]), value_or_zero(colors[:green]),
       value_or_zero(colors[:blue]), value_or_zero(colors[:alpha])>>}
   end
 
@@ -249,4 +250,3 @@ defmodule OSC.Message do
     {div(seconds, 1000000), rem(seconds, 1000000), 0}
   end
 end
-
